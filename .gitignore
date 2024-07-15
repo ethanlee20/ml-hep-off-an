@@ -1,0 +1,11 @@
+__pycache__
+*.ipynb
+.jupyter
+*.DS_Store
+*.root
+*.pkl
+*.png
+.pytest_cache
+.vscode
+*~
+*.log

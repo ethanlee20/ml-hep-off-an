@@ -1,0 +1,7 @@
+
+Generating new physics data (ell = mu)  with delta c9 = -0.87 using Alexei's new physics generator. 
+
+Also generating an equal number of standard model events, also using Alexei's new physics generator.
+
+This is a test to ensure that the new physics generator is working as expected.
+ 
