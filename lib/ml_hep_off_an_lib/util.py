@@ -293,6 +293,7 @@ def make_bin_edges(start, stop, num_bins, ret_middles=False):
     Make histogram bin edges.
 
     Bins are uniform size.
+    Includes the stop edge.
     """
 
     bin_size = (stop - start) / num_bins
