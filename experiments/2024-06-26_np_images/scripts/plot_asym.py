@@ -8,7 +8,7 @@ from ml_hep_off_an_lib.afb import calc_afb_of_q_squared
 from ml_hep_off_an_lib.s5 import calc_s5_of_q_squared
 from ml_hep_off_an_lib.plot import setup_mpl_params
 
-from helpers import load_all_trials, list_dc9
+from helpers import load_df_all_trials, list_dc9
 
 
 def plot_afb(data, dc9, ax, cmap, norm, ell='mu', num_points=50, alpha=0.8):
@@ -44,27 +44,27 @@ def main():
     for level, title in zip(levels, titles):
         
         # AFB
-        # fig, ax = plt.subplots()
+        fig, ax = plt.subplots()
         
-        # for dc9 in dc9_values:
-        #     data = load_all_trials(dc9).loc[level]
-        #     plot_afb(data, dc9, ax, cmap, norm)
+        for dc9 in dc9_values:
+            data = load_df_all_trials(dc9).loc[level]
+            plot_afb(data, dc9, ax, cmap, norm)
 
-        # ax.set_title(title, loc='right')
-        # ax.set_ylabel(r'$A_{FB}$')
-        # ax.set_xlabel(r'$q^2$ [GeV$^2$]')
-        # ax.set_xbound(0, 19)
-        # ax.set_ybound(-0.3, 0.5)
-        # fig.colorbar(ScalarMappable(norm=norm, cmap=cmap), ax=ax, orientation='vertical', label=r'$\delta C_9$')
+        ax.set_title(title, loc='right')
+        ax.set_ylabel(r'$A_{FB}$')
+        ax.set_xlabel(r'$q^2$ [GeV$^2$]')
+        ax.set_xbound(0, 19)
+        ax.set_ybound(-0.3, 0.5)
+        fig.colorbar(ScalarMappable(norm=norm, cmap=cmap), ax=ax, orientation='vertical', label=r'$\delta C_9$')
         
-        # plt.savefig(f"../plots/afb_{level}.png", bbox_inches='tight')
-        # plt.close(fig)
+        plt.savefig(f"../plots/afb_{level}.png", bbox_inches='tight')
+        plt.close(fig)
 
         # S5
         fig, ax = plt.subplots()
         
         for dc9 in dc9_values:
-            data = load_all_trials(dc9).loc[level]
+            data = load_df_all_trials(dc9).loc[level]
             plot_s5(data, dc9, ax, cmap, norm)
 
         ax.set_title(title, loc='right')
@@ -76,8 +76,6 @@ def main():
         
         plt.savefig(f"../plots/s5_{level}.png", bbox_inches='tight')
         plt.close(fig)
-
-
 
 
 if __name__ == "__main__":

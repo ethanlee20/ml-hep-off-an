@@ -8,17 +8,7 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 from ml_hep_off_an_lib.util import make_bin_edges
-from helpers import file_info
-
-
-def make_image_filename(dc9, trial, level):
-    name = f"dc9_{dc9}_{trial}_img_{level}.npy"
-    return name
-
-
-def make_edges_filename(dc9, trial, level):
-    name = f"dc9_{dc9}_{trial}_edges_{level}.npy"
-    return name
+from helpers import file_info, make_edges_filename, make_image_filename
 
 
 def make_bins(domains, n_bins=10):
@@ -43,22 +33,20 @@ def datafile_to_images(filepath, ell='mu'):
     levels = ["gen", "det"]
     for lev in levels:
         df_level = df.loc[lev]
-        
         hist, edges = np.histogramdd(df_level.to_numpy(), bins=bins, density=False)
-        edges = np.array(edges) 
+        # edges = np.array(edges)
 
         image_filename = make_image_filename(info["dc9"], info["trial"], lev)
-        edges_filename = make_edges_filename(info["dc9"], info["trial"], lev)
+        # edges_filename = make_edges_filename(info["dc9"], info["trial"], lev)
         np.save(data_dir.joinpath(image_filename), hist)
-        np.save(data_dir.joinpath(edges_filename), edges)
+        # np.save(data_dir.joinpath(edges_filename), edges)
 
 
 def main():
-    for filepath in ["../datafiles/dc9_-0.08_1_re.pkl"]: #list(data_dir.glob("*_re.pkl")):
+    data_dir = Path("../datafiles")
+    for filepath in list(data_dir.glob("*_re.pkl")):
         datafile_to_images(filepath)
 
-        
-    
 
 if __name__ == "__main__":
     main() 

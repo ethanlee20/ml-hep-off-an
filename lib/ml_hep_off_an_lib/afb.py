@@ -4,7 +4,7 @@ Calculation functions for Afb (Forward - Backward Asymmetry).
 """
 
 from math import sqrt
-from util import bin_data, find_bin_middles
+from .util import bin_data, find_bin_middles
 
 
 def _afb_fn(ell):

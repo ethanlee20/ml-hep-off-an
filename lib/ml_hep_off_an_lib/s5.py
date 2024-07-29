@@ -5,7 +5,7 @@ Calculation function for S5 (angular asymmetry).
 
 from math import pi, sqrt  
 import numpy as np
-from util import count_events, bin_data, find_bin_middles
+from .util import count_events, bin_data, find_bin_middles
 
 
 def _calc_s5(df):

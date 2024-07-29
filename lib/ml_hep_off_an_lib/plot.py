@@ -500,3 +500,57 @@ def add_color_bar(axs, norm, cmap):
     
     sm = scalar_mappable(norm, cmap)
     plt.colorbar(sm, ax=axs, aspect=30)
+
+
+def plot_volume_slices(ax_3d, arr, cmap, norm, n_slices=3):
+    """
+    Plot slices of volumetric data.
+    Slices are along the z-axis (axis 2).
+    Array arr should be a three-dimensional numpy array.
+    Slices might not be evenly spaced along z-axis.
+    """
+    colors = cmap(norm(arr))
+    
+    x_axis = 0
+    y_axis = 1
+    z_axis = 2
+
+    x_shape = arr.shape[x_axis]
+    y_shape = arr.shape[y_axis]
+    z_shape = arr.shape[z_axis]
+
+    def xy_plane(z_pos):
+        x, y = np.indices(
+            (x_shape + 1, y_shape + 1)
+        )
+        z = np.full(
+            (x_shape + 1, y_shape + 1), z_pos
+        )
+        return x, y, z
+
+    def plot_slice(z_index):
+        x, y, z = xy_plane(z_index) 
+
+        ax_3d.plot_surface(
+            x, y, z, 
+            rstride=1, cstride=1, 
+            facecolors=colors[:,:,z_index], 
+            shade=False
+        )
+
+    def plot_outline(z_index, offset=0.3):
+        x, y, z = xy_plane(z_index - offset)
+        
+        ax_3d.plot_surface(
+            x, y, z, 
+            rstride=1, cstride=1, 
+            shade=False,
+            color="#f2f2f2",
+            edgecolor="#f2f2f2", 
+        )
+
+    z_indices = np.linspace(0, z_shape-1, n_slices, dtype=int)
+    for i in z_indices:
+        plot_outline(i)
+        plot_slice(i)
+
