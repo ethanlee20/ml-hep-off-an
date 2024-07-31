@@ -3,8 +3,11 @@ from math import sqrt
 from statistics import mean
 
 from pathlib import Path
+
 import numpy as np
 import pandas as pd
+import torch
+from torch.utils.data import Dataset
 
 
 def file_info(filepath):
@@ -94,3 +97,79 @@ def stats(x:list, y:list):
     y_mean = list(map(mean, y_by_x))
 
     return x_ticks, y_mean, y_stdev
+
+
+class ImageDataset(Dataset):
+    def __init__(self, level, train):
+        self.data_dir = Path("../datafiles")
+
+        train_trial_range = range(1, 12)
+        test_trial_range = range(12, 16)
+
+        filenames = (
+            make_image_filename_range(
+                dc9="all", 
+                trial_range=train_trial_range, 
+                level=level
+            )
+            if train
+            else 
+            make_image_filename_range(
+                dc9="all", 
+                trial_range=test_trial_range, 
+                level=level
+            )
+        )
+
+        def to_path(filename):
+            return self.data_dir.joinpath(filename)
+        
+        self.filepaths = [
+            to_path(f) 
+            for f in filenames 
+            if to_path(f).is_file()
+        ]
+
+    def __len__(self):
+        return len(self.filepaths)
+    
+    def __getitem__(self, idx):
+        image_path = self.filepaths[idx]
+        image = np.load(image_path, allow_pickle=True)
+        image = torch.from_numpy(image)
+        label = file_info(image_path)["dc9"]
+        return image, label
+
+
+def train_loop(dataloader, model, loss_fn, optimizer, device):
+    
+    def train(X, y):
+        model.train() 
+        pred = model(X.to(device))
+        loss = loss_fn(pred, y.to(device).unsqueeze(1))
+        loss.backward()
+        optimizer.step()
+        optimizer.zero_grad()
+        return loss.item()
+    
+    num_batches = len(dataloader)
+    losses = [train(X, y) for X, y in dataloader]
+    avg_train_loss = sum(losses) / num_batches
+
+    return avg_train_loss
+
+
+def test_loop(dataloader, model, loss_fn, device):
+
+    def test(X, y):
+        model.eval()
+        with torch.no_grad():
+            pred = model(X.to(device))
+            loss = loss_fn(pred, y.to(device).unsqueeze(1))
+            return loss.item()
+    
+    num_batches = len(dataloader)
+    losses = [test(X, y) for X, y in dataloader]
+    avg_test_loss = sum(losses) / num_batches
+    
+    return avg_test_loss

@@ -1,43 +1,53 @@
 
 import numpy as np
-import matplotlib.pyplot as plt
-
 import torch
 from torch import nn
 from torch.utils.data import DataLoader
 
+import matplotlib.pyplot as plt
+
 from ml_hep_off_an_lib.plot import setup_mpl_params
 
-from helpers import stats, ImageDataset, test_loop, train_loop
+from helpers import ImageDataset, stats, train_loop, test_loop
 
 
-class NeuralNetwork(nn.Module):
+class ConvolutionalNN(nn.Module):
     def __init__(self):
         super().__init__()
-        self.flatten = nn.Flatten()
-        self.linear_relu_stack = nn.Sequential(
-            nn.Linear(10*10*10, 500),
+        self.conv = nn.Sequential(
+            nn.Conv2d(10, 15, 3),
             nn.ReLU(),
-            nn.Linear(500, 250),
+            nn.MaxPool2d(2,2),
+            nn.Conv2d(15, 20, 3),
             nn.ReLU(),
-            nn.Linear(250, 50),
-            nn.ReLU(),
-            nn.Linear(50, 1),
+            nn.MaxPool2d(2,2),
+            nn.AdaptiveAvgPool2d(1),
         )
+
+        self.dense = nn.Sequential(
+            nn.Dropout(),
+            nn.Linear(20, 1)
+        )
+
         self.double()
-    
+
     def forward(self, x):
-        x = self.flatten(x)
-        result = self.linear_relu_stack(x)
+        z = self.conv(x)
+        z = z.squeeze()
+        result = self.dense(z)
         return result
-    
+
 
 def main():
+    
+    setup_mpl_params()
+    
+    learning_rate = 2e-3
+    epochs = 100
+    train_batch_size = 20
+    test_batch_size = 5
+    
     for level in ["gen", "det"]:
-        learning_rate = 1e-3
-        epochs = 100
-        train_batch_size = 20
-        test_batch_size = 5
         
         device = (
             "cuda" 
@@ -46,7 +56,7 @@ def main():
             "cpu"
         )
 
-        model = NeuralNetwork().to(device)
+        model = ConvolutionalNN().to(device)
         loss_fn = nn.MSELoss()
         optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
 
@@ -59,12 +69,9 @@ def main():
         avg_test_losses = []
         avg_train_losses = []
         for t in range(epochs):
-            # if t == 50:
-                # breakpoint()
             avg_train_losses.append(train_loop(train_dataloader, model, loss_fn, optimizer, device))
             avg_test_losses.append(test_loop(test_dataloader, model, loss_fn, device))
 
-        setup_mpl_params()
 
         def plot_losses(test_losses, train_losses):
             plt.plot(test_losses, label="test")
@@ -74,7 +81,7 @@ def main():
             plt.ylabel(r"Loss (MSE)")
             plt.title(f"Test batch size: {test_batch_size}\nTrain batch size: {train_batch_size}", loc="right")
             plt.legend()
-            plt.savefig(f"../plots/nn_losses_{level}.png", bbox_inches="tight")
+            plt.savefig(f"../plots/cnn_losses_{level}.png", bbox_inches="tight")
             plt.close()
 
         plot_losses(avg_test_losses, avg_train_losses)
@@ -119,13 +126,13 @@ def main():
                     result += ", Generator" 
                 elif level=="det":
                     result += ", Detector"  
-                result += f", Fully Connected\nEpochs: {epochs}, Learn. Rate: {learning_rate}"
+                result += f", Convolutional\nEpochs: {epochs}, Learn. Rate: {learning_rate}"
                 result += f"\nBatch Size: {train_batch_size} (Train), {test_batch_size} (Test)"
                 return result
             
             plt.title(make_title(level), loc="right")
             
-            plt.savefig(f"../plots/nn_lin_{level}.png", bbox_inches="tight")
+            plt.savefig(f"../plots/cnn_lin_{level}.png", bbox_inches="tight")
             plt.close()
             
         plot_lin(model, test_dataloader)

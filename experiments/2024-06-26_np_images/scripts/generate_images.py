@@ -33,14 +33,11 @@ def datafile_to_images(filepath, ell='mu'):
     levels = ["gen", "det"]
     for lev in levels:
         df_level = df.loc[lev]
-        hist, edges = np.histogramdd(df_level.to_numpy(), bins=bins, density=False)
-        # edges = np.array(edges)
-
+        hist, _ = np.histogramdd(df_level.to_numpy(), bins=bins, density=False)
+        
         image_filename = make_image_filename(info["dc9"], info["trial"], lev)
-        # edges_filename = make_edges_filename(info["dc9"], info["trial"], lev)
         np.save(data_dir.joinpath(image_filename), hist)
-        # np.save(data_dir.joinpath(edges_filename), edges)
-
+        
 
 def main():
     data_dir = Path("../datafiles")
