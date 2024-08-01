@@ -101,10 +101,10 @@ def stats(x:list, y:list):
 
 class ImageDataset(Dataset):
     def __init__(self, level, train):
-        self.data_dir = Path("../datafiles")
+        self.data_dir = Path("../datafiles/shawn_images")
 
-        train_trial_range = range(1, 12)
-        test_trial_range = range(12, 16)
+        train_trial_range = range(1, 13)
+        test_trial_range = range(13, 16)
 
         filenames = (
             make_image_filename_range(
