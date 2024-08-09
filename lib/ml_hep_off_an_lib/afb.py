@@ -7,7 +7,7 @@ from math import sqrt
 from .util import bin_data, find_bin_middles
 
 
-def _afb_fn(ell):
+def afb_fn(ell):
     def fn(df):
         if ell == 'mu':
             d_cos_theta_l = df['costheta_mu']
@@ -22,7 +22,7 @@ def _afb_fn(ell):
     return fn
 
 
-def _afb_err_fn(ell):
+def afb_err_fn(ell):
     def fn(df):
         if ell == 'mu':
             d_cos_theta_l = df['costheta_mu']
@@ -49,8 +49,8 @@ def calc_afb_of_q_squared(df, ell, num_points):
     df = df[(df['q_squared']>0) & (df['q_squared']<20)]
     binned, edges = bin_data(df, 'q_squared', num_points, ret_edges=True)
     
-    afbs = binned.apply(_afb_fn(ell))
-    errs = binned.apply(_afb_err_fn(ell))
+    afbs = binned.apply(afb_fn(ell))
+    errs = binned.apply(afb_err_fn(ell))
     q_squareds = find_bin_middles(edges)
 
     return q_squareds, afbs, errs

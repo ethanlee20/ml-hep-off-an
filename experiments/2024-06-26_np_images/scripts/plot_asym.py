@@ -11,7 +11,7 @@ from ml_hep_off_an_lib.plot import setup_mpl_params
 from helpers import load_df_all_trials, list_dc9
 
 
-def plot_afb(data, dc9, ax, cmap, norm, ell='mu', num_points=50, alpha=0.8):
+def plot_afb(data, dc9, ax, cmap, norm, ell='mu', num_points=3, alpha=0.8):
     x, y, err = calc_afb_of_q_squared(data, ell, num_points)
     label = r"$\delta C_9 = " + f"{dc9}$"
     color = cmap(norm(dc9), alpha=alpha)
@@ -20,7 +20,7 @@ def plot_afb(data, dc9, ax, cmap, norm, ell='mu', num_points=50, alpha=0.8):
     return
 
 
-def plot_s5(data, dc9, ax, cmap, norm, ell='mu', num_points=50, alpha=0.8):
+def plot_s5(data, dc9, ax, cmap, norm, ell='mu', num_points=3, alpha=0.8):
     x, y, err = calc_s5_of_q_squared(data, num_points)
     label = r"$\delta C_9 = " + f"{dc9}$"
     color = cmap(norm(dc9), alpha=alpha)
@@ -57,7 +57,7 @@ def main():
         ax.set_ybound(-0.3, 0.5)
         fig.colorbar(ScalarMappable(norm=norm, cmap=cmap), ax=ax, orientation='vertical', label=r'$\delta C_9$')
         
-        plt.savefig(f"../plots/afb_{level}.png", bbox_inches='tight')
+        plt.savefig(f"../plots/afb_{level}_lowbin.png", bbox_inches='tight')
         plt.close(fig)
 
         # S5
@@ -74,7 +74,7 @@ def main():
         ax.set_ybound(-0.5, 0.5)
         fig.colorbar(ScalarMappable(norm=norm, cmap=cmap), ax=ax, orientation='vertical', label=r'$\delta C_9$')
         
-        plt.savefig(f"../plots/s5_{level}.png", bbox_inches='tight')
+        plt.savefig(f"../plots/s5_{level}_lowbin.png", bbox_inches='tight')
         plt.close(fig)
 
 

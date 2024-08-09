@@ -8,7 +8,7 @@ import numpy as np
 from .util import count_events, bin_data, find_bin_middles
 
 
-def _calc_s5(df):
+def calc_s5(df):
     costheta_k = df["costheta_K"]
     chi = df["chi"]
     
@@ -33,7 +33,7 @@ def _calc_s5(df):
     return s5
 
 
-def _calc_s5_err(df):
+def calc_s5_err(df):
     costheta_k = df["costheta_K"]
     chi = df["chi"]
     
@@ -72,8 +72,8 @@ def calc_s5_of_q_squared(df, num_points):
     df = df[(df['q_squared']>0) & (df['q_squared']<20)]
     binned, edges = bin_data(df, 'q_squared', num_points, ret_edges=True)
     
-    s5s = binned.apply(_calc_s5)
-    errs = binned.apply(_calc_s5_err)
+    s5s = binned.apply(calc_s5)
+    errs = binned.apply(calc_s5_err)
     q_squareds = find_bin_middles(edges)
 
     return q_squareds, s5s, errs

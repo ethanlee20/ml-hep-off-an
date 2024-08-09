@@ -1,4 +1,5 @@
 
+import pickle
 from math import sqrt
 from statistics import mean
 
@@ -26,15 +27,15 @@ def list_dc9():
     return result 
 
 
-def make_image_filename(dc9, trial, level):
-    name = f"dc9_{dc9}_{trial}_img_{level}.npy"
+def make_image_filename(dc9, trial, level, ext=".npy"):
+    name = f"dc9_{dc9}_{trial}_img_{level}{ext}"
     return name
 
 
-def make_image_filename_range(dc9, trial_range, level):
+def make_image_filename_range(dc9, trial_range, level, ext=".npy"):
     if dc9 == "all":
         result = [
-            make_image_filename(dc9_i, t, level) 
+            make_image_filename(dc9_i, t, level, ext=ext) 
             for dc9_i in list_dc9() 
             for t in trial_range
         ]
@@ -43,16 +44,42 @@ def make_image_filename_range(dc9, trial_range, level):
     return result
 
 
-def make_edges_filename(dc9, trial, level):
-    name = f"dc9_{dc9}_{trial}_edges_{level}.npy"
-    return name
-
-
 def load_df(dc9, trial):
     filename = f"dc9_{dc9}_{trial}_re.pkl"
     filepath = Path("../datafiles").joinpath(filename)
+    assert filepath.is_file(), "File doesn't exist?"
     result = pd.read_pickle(filepath)
     return result
+
+
+def load_df_trial_range(dc9, trial_range:range):
+    dfs = [load_df(dc9, t) for t in trial_range]
+    df_all = pd.concat(dfs)
+    return df_all
+
+
+def load_trial_range(trial_range:range, data_dirpath="../datafiles"):
+    data_dirpath = Path(data_dirpath)
+
+    filepaths = []
+    for t in trial_range:
+        filepaths += data_dirpath.glob(f"dc9_*_{t}_re.pkl")
+
+    return filepaths
+
+
+def load_df_all_trials(dc9):
+    filepaths=list(Path("../datafiles").glob(f"dc9_{dc9}_*_re.pkl"))
+    dfs = [pd.read_pickle(path) for path in filepaths]
+    result = pd.concat(dfs)
+    return result
+
+
+def load_image(dc9, trial, level, dirpath):
+    dirpath = Path(dirpath)
+    filepath = dirpath.joinpath(make_image_filename(dc9, trial, level))
+    image = np.load(filepath, allow_pickle=True)
+    return image
 
 
 def load_image_all_trials(dc9, level):
@@ -65,11 +92,6 @@ def load_image_all_trials(dc9, level):
     return result
 
 
-def load_df_all_trials(dc9):
-    filepaths=list(Path("../datafiles").glob(f"dc9_{dc9}_*_re.pkl"))
-    dfs = [pd.read_pickle(path) for path in filepaths]
-    result = pd.concat(dfs)
-    return result
 
 
 def stats(x:list, y:list):
@@ -99,9 +121,20 @@ def stats(x:list, y:list):
     return x_ticks, y_mean, y_stdev
 
 
+def select_device():
+    device = (
+        "cuda" 
+        if torch.cuda.is_available()
+        else 
+        "cpu"
+    )
+    print("Device: ", device)
+    return device
+
+
 class ImageDataset(Dataset):
-    def __init__(self, level, train):
-        self.data_dir = Path("../datafiles/shawn_images")
+    def __init__(self, level, train, dirpath):
+        self.data_dirpath = Path(dirpath)
 
         train_trial_range = range(1, 13)
         test_trial_range = range(13, 16)
@@ -122,7 +155,7 @@ class ImageDataset(Dataset):
         )
 
         def to_path(filename):
-            return self.data_dir.joinpath(filename)
+            return self.data_dirpath.joinpath(filename)
         
         self.filepaths = [
             to_path(f) 
@@ -135,8 +168,10 @@ class ImageDataset(Dataset):
     
     def __getitem__(self, idx):
         image_path = self.filepaths[idx]
+
         image = np.load(image_path, allow_pickle=True)
         image = torch.from_numpy(image)
+
         label = file_info(image_path)["dc9"]
         return image, label
 
