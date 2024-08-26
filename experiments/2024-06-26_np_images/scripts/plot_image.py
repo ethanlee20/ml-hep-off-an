@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 from matplotlib.colors import Normalize
 from matplotlib.cm import ScalarMappable
 
-from ml_hep_off_an_lib.plot import setup_mpl_params
+from analysis.plot import setup_mpl_params
 
 setup_mpl_params()
 

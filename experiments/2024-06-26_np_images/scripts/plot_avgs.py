@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 import torch
 from torch.utils.data import DataLoader
 
-from ml_hep_off_an_lib.plot import setup_mpl_params
+from analysis.plot import setup_mpl_params
 setup_mpl_params()
 
 from datasets import AvgsDataset

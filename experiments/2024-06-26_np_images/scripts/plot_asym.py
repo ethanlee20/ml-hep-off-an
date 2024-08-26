@@ -4,9 +4,9 @@ from matplotlib.cm import ScalarMappable
 
 import matplotlib.pyplot as plt
 
-from ml_hep_off_an_lib.afb import calc_afb_of_q_squared
-from ml_hep_off_an_lib.s5 import calc_s5_of_q_squared
-from ml_hep_off_an_lib.plot import setup_mpl_params
+from analysis.afb import calc_afb_of_q_squared
+from analysis.s5 import calc_s5_of_q_squared
+from analysis.plot import setup_mpl_params
 
 from helpers import load_df_all_trials, list_dc9
 

@@ -14,7 +14,7 @@ from helpers import ImageDataset, select_device, stats, list_dc9
 
 from datasets import AvgsDataset, Hist2dDataset
 
-from ml_hep_off_an_lib.plot import setup_mpl_params
+from analysis.plot import setup_mpl_params
 setup_mpl_params()
 
 

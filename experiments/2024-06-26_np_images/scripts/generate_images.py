@@ -7,7 +7,7 @@ from math import pi
 from pathlib import Path
 import numpy as np
 import pandas as pd
-from ml_hep_off_an_lib.util import make_bin_edges
+from analysis.util import make_bin_edges
 from helpers import file_info, make_edges_filename, make_image_filename
 
 

@@ -18,14 +18,14 @@ from helpers import ImageDataset, train_loop, test_loop, select_device
 from models import Convolutional3D, NN_Afb_S5, NeuralNetAvg, Conv2dNet
 from datasets import AvgsDataset, Hist2dDataset
 
-from ml_hep_off_an_lib.plot import setup_mpl_params
+from analysis.plot import setup_mpl_params
 setup_mpl_params()
 
-from ml_hep_off_an_lib.models.deep_sets import Deep_Sets
-from ml_hep_off_an_lib.models.pp import NN_pp
-from ml_hep_off_an_lib.models.te import TransformerRegressor
-from ml_hep_off_an_lib.datasets.as_is import As_Is_Dataset
-from ml_hep_off_an_lib.datasets.per_part import Per_Part_Dataset
+from analysis.models.deep_sets import Deep_Sets
+from analysis.models.pp import NN_pp
+from analysis.models.te import TransformerRegressor
+from analysis.datasets.as_is import As_Is_Dataset
+from analysis.datasets.per_part import Per_Part_Dataset
 
 
 

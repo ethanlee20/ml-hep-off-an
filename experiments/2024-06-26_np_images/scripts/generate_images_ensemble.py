@@ -8,8 +8,8 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
-from ml_hep_off_an_lib.afb import afb_fn
-from ml_hep_off_an_lib.s5 import calc_s5
+from analysis.afb import afb_fn
+from analysis.s5 import calc_s5
 
 from helpers import file_info, make_image_filename
 
