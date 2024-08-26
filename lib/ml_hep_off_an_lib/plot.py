@@ -27,14 +27,16 @@ def setup_mpl_params():
     mpl.rcParams["xtick.labelsize"] = 12 
     mpl.rcParams["ytick.labelsize"] = 12
     mpl.rcParams["text.usetex"] = True
+    mpl.rcParams["text.latex.preamble"] = r"\usepackage{bm}"
     mpl.rcParams["font.family"] = "serif"
     mpl.rcParams["font.serif"] = ["Computer Modern"]
+    mpl.rcParams["font.size"] = 10
     mpl.rcParams["axes.titley"] = None
     mpl.rcParams["axes.titlepad"] = 4
     mpl.rcParams["legend.fancybox"] = False
     mpl.rcParams["legend.framealpha"] = 0
     mpl.rcParams["legend.markerscale"] = 1
-    mpl.rcParams["font.size"] = 7.5
+    mpl.rcParams["legend.fontsize"] = 7.5
 
 
 def save_plot(path):

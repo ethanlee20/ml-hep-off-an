@@ -1,6 +1,6 @@
 
 import math
-
+from random import uniform
 from pathlib import Path
 
 import numpy as np
@@ -33,7 +33,7 @@ def scale_std(df, columns):
     return df_scaled
 
 
-def check_arguments(level, train, events_per_dist, sampling_ratio):
+def check_arguments(level, train, events_per_dist):
 
     """
     Make sure initialization arguments are reasonable.
@@ -42,8 +42,6 @@ def check_arguments(level, train, events_per_dist, sampling_ratio):
     assert level in {"gen", "det"}
     assert type(train) == bool
     assert type(events_per_dist) == int
-    if not train: 
-        assert sampling_ratio == None
 
 
 def make_data_filepath(train:bool):
@@ -94,35 +92,30 @@ def make_sampled_df(df, sampling_ratio):
 
     avg_num_events_per_dc9 = num_events / num_dc9_values
 
-    num_samples_per_dc9 = sampling_ratio * avg_num_events_per_dc9
+    num_samples_per_dc9 = int(sampling_ratio * avg_num_events_per_dc9)
             
     df_sample = df_by_dc9.sample(n=num_samples_per_dc9, replace=True)
 
     return df_sample
 
 
-def make_distributions(df, train:bool, events_per_dist:int, sampling_ratio=None):
+def make_distributions(df, events_per_dist:int, sampling_ratio=None):
     """
     Create a list of distribution dataframes.
     
     Each distributions is homogenous in delta C9.
 
-    Distributions for the training set are bootstrapped
-    from the original training data.
+    Distributions are bootstrapped from the original data
+    if sampling_ratio is given.
 
-    Distributions for the test set are taken in sequence 
-    from the training data.
-    
-    Sampling ratio must be specified for the training set.
+    Distributions are taken in sequence from the original data
+    if sampling_ratio is not given.
 
     Distributions with greater than half the specified
     number of events per distribution are kept.
     """
     
-    if not train:
-        assert not sampling_ratio
-
-    if train:
+    if sampling_ratio:
         df = make_sampled_df(df, sampling_ratio)
  
     df_by_dc9 = df.groupby("dc9")
@@ -159,72 +152,54 @@ def make_averages_df(dists:list[pd.DataFrame]):
     return df_avgs
 
 
+def make_check_df(dists:list[pd.DataFrame]):
+
+    """
+    Make a dataframe to sanity check the method.
+
+    Dataframe will be fake data.
+    Dataframe will have incremental values.
+    """
+
+    check_dfs = [
+        pd.DataFrame(
+            {
+                "q_squared":[float(0)], 
+                "costheta_mu":[float(0)], 
+                "costheta_K":[float(0)], 
+                "chi":[float(0)], 
+                "dc9":[float(0)]
+            }
+        ) 
+        for i in range(1999)
+    ]
+
+    df_check = pd.concat(check_dfs)
+    
+    return df_check
+
+
 class AvgsDataset(Dataset):
     
-    def __init__(self, level:str, train:bool, events_per_dist:int, sampling_ratio=None):
+    def __init__(self, level:str, train:bool, events_per_dist:int, sampling_ratio=None, std_scale=True):
     
-        check_arguments(level, train, events_per_dist, sampling_ratio)
+        check_arguments(level, train, events_per_dist)
 
         data_filepath = make_data_filepath(train)
 
         df = load_dataframe(data_filepath, level)
 
-        df_by_dc9 = df.groupby("dc9")
+        dists = make_distributions(df, events_per_dist, sampling_ratio)
 
-        if not train:
-
-            df_avgs = pd.DataFrame(columns=["q_squared", "costheta_mu", "costheta_K", "chi", "dc9"])
-
-            for _, df_group in df_by_dc9:
-
-                for i in range(0, len(df_group), events_per_dist):
-
-                    df_dist = df_group.iloc[i:i+events_per_dist]
-
-                    if len(df_dist) < events_per_dist/2: 
-                        continue
-
-                    df_avgs = pd.concat([
-                        None if df_avgs.empty 
-                        else df_avgs, 
-                        df_dist.mean().to_frame().T
-                    ])
-
-            df_scaled_avgs = scale_std(df_avgs, ["q_squared", "costheta_mu", "costheta_K", "chi"])
-
-            self.data = df_scaled_avgs
-           
-            return
+        df_avgs = make_averages_df(dists)
         
-        if not sampling_ratio: 
-            sampling_ratio = 1.0
+        if std_scale:
+            df_avgs = scale_std(
+                df_avgs, 
+                ["q_squared", "costheta_mu", "costheta_K", "chi"]
+            )
 
-        num_dc9_values = len(list_dc9())
-
-        num_events = len(df)
-            
-        num_dists_per_dc9 = int(sampling_ratio * num_events / (events_per_dist * num_dc9_values))
-        
-        df_sample = df_by_dc9.sample(n=events_per_dist*num_dists_per_dc9, replace=True)
-
-        df_sample_avgs = pd.DataFrame(columns=["q_squared", "costheta_mu", "costheta_K", "chi", "dc9"])
-
-        for i in range(0, len(df_sample), events_per_dist):
-
-            df_dist = df_sample.iloc[i:i+events_per_dist]
-            
-            df_sample_avgs = pd.concat([
-                None if df_sample_avgs.empty 
-                else df_sample_avgs, 
-                df_dist.mean().to_frame().T
-            ]) 
-
-        df_scaled_sample_avgs = scale_std(
-            df_sample_avgs, 
-            ["q_squared", "costheta_mu", "costheta_K", "chi"]
-        )
-
-        self.data = df_scaled_sample_avgs
+        self.data = df_avgs
 
         return
     
@@ -243,17 +218,92 @@ class AvgsDataset(Dataset):
         label = row["dc9"]
 
         return features_torch, label
+
+
+def make_2d_hist_array(df):
+
+    """
+    Make an array composed of two dimensional histograms
+    of combinations of variables.
+
+    The final array is three dimensional.
+    """
+
+    n_bins = 5
+    bins = {
+        "q_squared": np.array([0, 1, 6, 12, 16, 20]),
+        "chi": np.linspace(start=0, stop=2*np.pi, num=n_bins+1),
+        "costheta_mu": np.linspace(start=-1, stop=1, num=n_bins+1),
+        "costheta_K": np.linspace(start=-1, stop=1, num=n_bins+1),
+    }
+
+    combinations = [
+        ["q_squared", "costheta_mu"],
+        ["q_squared", "costheta_K"],
+        ["q_squared", "chi"],
+        ["costheta_K", "chi"],
+        ["costheta_mu", "chi"],
+        ["costheta_K", "costheta_mu"]
+    ]
+
+    hists = [
+        np.expand_dims(
+            np.histogram2d(df[c[0]], df[c[1]], bins=(bins[c[0]], bins[c[1]]))[0],
+            axis=0
+        )
+        for c in combinations
+    ]
+    hist_arr = np.concatenate(hists, axis=0)
+    # breakpoint()
+    
+    return hist_arr
+
+
+class Hist2dDataset(Dataset):
+    
+    def __init__(self, level:str, train:bool, events_per_dist:int, sampling_ratio=None, std_scale=True):
+    
+        check_arguments(level, train, events_per_dist)
+
+        data_filepath = make_data_filepath(train)
+
+        df = load_dataframe(data_filepath, level)
+
+        dists = make_distributions(df, events_per_dist, sampling_ratio)
+
+        hists = [make_2d_hist_array(d) for d in dists] 
+
+        self.dists = dists
+        self.data = hists
+
+
+        return
+    
+    def __len__(self):
+        
+        return len(self.data)
+    
+    def __getitem__(self, idx):
+        
+        features = self.data[idx]
+        features_torch = torch.from_numpy(features)
+        
+        label = self.dists[idx]["dc9"].iloc[0].item()
+
+        return features_torch, label
     
 
 def test():
     # d = AvgsDataset("gen", train=True, events_per_dist=3, num_dists_per_dc9=3)
     # l = d.__len__()
     # i = d.__getitem__(3)
-    d = AvgsDataset("gen", train=True, events_per_dist=24_000, sampling_ratio=2.0)
+    d = AvgsDataset("gen", train=True, events_per_dist=24_000, sampling_ratio=None)
     breakpoint()
-    d = AvgsDataset("gen", train=False, events_per_dist=24_000,)
+    d = AvgsDataset("gen", train=False, events_per_dist=24_000, sampling_ratio=2.0)
     l = d.__len__()
     i = d.__getitem__(3)
-    breakpoint()
+    # breakpoint()
 
-# test()
+
+if __name__ == "__main__":
+    test()

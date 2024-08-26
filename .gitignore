@@ -11,3 +11,4 @@ __pycache__
 *.log
 *.npy
 *.pt
+*.img

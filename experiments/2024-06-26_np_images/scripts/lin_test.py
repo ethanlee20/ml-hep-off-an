@@ -2,24 +2,34 @@
 from pathlib import Path
 
 import numpy as np
+import matplotlib as mpl
 import matplotlib.pyplot as plt
 
 import torch
 from torch.utils.data import DataLoader
 
-from models import Convolutional3D, NN_Afb_S5, NeuralNetAvg
+from models import Convolutional3D, NN_Afb_S5, NeuralNetAvg, Conv2dNet
 
-from helpers import ImageDataset, select_device, stats
+from helpers import ImageDataset, select_device, stats, list_dc9
 
-from datasets import AvgsDataset
+from datasets import AvgsDataset, Hist2dDataset
 
 from ml_hep_off_an_lib.plot import setup_mpl_params
 setup_mpl_params()
 
 
-model = NeuralNetAvg()
-level = "gen"
-test_data = AvgsDataset("gen", train=False, events_per_dist=10_000)
+model = Conv2dNet()
+level = "det"
+events_per_dist = 40_000
+
+test_data = Hist2dDataset(
+    level, 
+    train=False, 
+    events_per_dist=events_per_dist, 
+    sampling_ratio=2
+)
+print(f"Number of rows (test data): {len(test_data)}")
+
 test_dataloader = DataLoader(test_data, batch_size=1,)
 
 device = select_device()
@@ -61,7 +71,19 @@ ax.set_ylim(-2.25, 1.35)
 ax.legend()
 ax.set_xlabel(r"Actual $\delta C_9$")
 ax.set_ylabel(r"Predicted $\delta C_9$")
-ax.set_title(f"Linearity: {model.name}", loc="right")
+ax.set_title(
+    r"\textbf{Linearity} : " + f"{model.name}, {level}",
+    loc="left"
+    )
+
+ax.text(
+    1, 1.005, 
+    r"\textbf{Events / Dist.} : " + f"{events_per_dist:.0e}\n" +
+    r"\textbf{Test Dist. /} $\bm{\delta C_9}$ : " + f"{len(test_data)/len(list_dc9())}", 
+    verticalalignment='bottom', 
+    horizontalalignment='right',
+    transform=ax.transAxes,
+)
 
 plt.savefig(f"../plots/lin_{model.name}.png", bbox_inches="tight")
 plt.close()

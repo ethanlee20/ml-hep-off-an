@@ -179,9 +179,12 @@ class ImageDataset(Dataset):
 def train_loop(dataloader, model, loss_fn, optimizer, device):
     
     def train(X, y):
-        model.train() 
+        model.train()
+        # breakpoint()
         pred = model(X.to(device))
-        loss = loss_fn(pred, y.to(device).unsqueeze(1))
+        # print(pred)
+        loss = loss_fn(pred, y.to(device))
+        # print(loss)
         loss.backward()
         optimizer.step()
         optimizer.zero_grad()
@@ -190,7 +193,7 @@ def train_loop(dataloader, model, loss_fn, optimizer, device):
     num_batches = len(dataloader)
     losses = [train(X, y) for X, y in dataloader]
     avg_train_loss = sum(losses) / num_batches
-
+    # breakpoint()
     return avg_train_loss
 
 
