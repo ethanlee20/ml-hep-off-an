@@ -8,7 +8,7 @@ from matplotlib.colors import Normalize
 from matplotlib.cm import ScalarMappable
 from matplotlib.transforms import Bbox
 
-from analysis.plot import setup_mpl_params, plot_volume_slices
+from analysis.plot.plot import setup_mpl_params, plot_volume_slices
 
 from helpers import file_info, list_dc9, load_image_all_trials
 

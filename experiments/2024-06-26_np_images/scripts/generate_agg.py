@@ -10,12 +10,10 @@ from helpers import file_info, load_trial_range
 
 
 for train in (True, False):
-    
-    # breakpoint()
-    
+        
     trial_range = (
-        range(1, 25) if train
-        else range(26, 30)
+        range(1, 27) if train
+        else range(27, 36)
     )
 
     filepaths = load_trial_range(trial_range)
@@ -44,6 +42,6 @@ for train in (True, False):
         else "df_test.pkl"
     )
 
-    df_all.to_pickle(f"../datafiles/consolidated/{output_filename}")
+    df_all.to_pickle(f"../datafiles/agg/{output_filename}")
 
 

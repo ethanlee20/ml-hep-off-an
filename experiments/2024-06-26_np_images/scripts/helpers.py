@@ -58,7 +58,7 @@ def load_df_trial_range(dc9, trial_range:range):
     return df_all
 
 
-def load_trial_range(trial_range:range, data_dirpath="../datafiles"):
+def load_trial_range(trial_range:range, data_dirpath="../datafiles/raw"):
     data_dirpath = Path(data_dirpath)
 
     filepaths = []
@@ -92,35 +92,6 @@ def load_image_all_trials(dc9, level):
     return result
 
 
-
-
-def stats(x:list, y:list):
-    """
-    Calculate statistics of y values for each x value.
-    Return [x_ticks], [y_mean], [y_stdev]
-    """
-    
-    assert len(x) == len(y)
-    
-    data = list(zip(x, y))
-    
-    x_ticks = sorted(set(x))
-    
-    y_by_x = [[d[1] for d in data if d[0]==tick] for tick in x_ticks]
-
-    def stdev(s:list):
-        m = mean(s)
-        sq = map(lambda i: (i-m)**2, s)
-        result = sqrt(sum(sq) / (len(s)-1))
-        return result
-    
-    y_stdev = list(map(stdev, y_by_x))
-
-    y_mean = list(map(mean, y_by_x))
-
-    return x_ticks, y_mean, y_stdev
-
-
 def select_device():
     device = (
         "cuda" 
@@ -132,82 +103,3 @@ def select_device():
     return device
 
 
-class ImageDataset(Dataset):
-    def __init__(self, level, train, dirpath):
-        self.data_dirpath = Path(dirpath)
-
-        train_trial_range = range(1, 13)
-        test_trial_range = range(13, 16)
-
-        filenames = (
-            make_image_filename_range(
-                dc9="all", 
-                trial_range=train_trial_range, 
-                level=level
-            )
-            if train
-            else 
-            make_image_filename_range(
-                dc9="all", 
-                trial_range=test_trial_range, 
-                level=level
-            )
-        )
-
-        def to_path(filename):
-            return self.data_dirpath.joinpath(filename)
-        
-        self.filepaths = [
-            to_path(f) 
-            for f in filenames 
-            if to_path(f).is_file()
-        ]
-
-    def __len__(self):
-        return len(self.filepaths)
-    
-    def __getitem__(self, idx):
-        image_path = self.filepaths[idx]
-
-        image = np.load(image_path, allow_pickle=True)
-        image = torch.from_numpy(image)
-
-        label = file_info(image_path)["dc9"]
-        return image, label
-
-
-def train_loop(dataloader, model, loss_fn, optimizer, device):
-    
-    def train(X, y):
-        model.train()
-        # breakpoint()
-        pred = model(X.to(device))
-        # print(pred)
-        loss = loss_fn(pred, y.to(device))
-        # print(loss)
-        loss.backward()
-        optimizer.step()
-        optimizer.zero_grad()
-        return loss.item()
-    
-    num_batches = len(dataloader)
-    losses = [train(X, y) for X, y in dataloader]
-    avg_train_loss = sum(losses) / num_batches
-    # breakpoint()
-    return avg_train_loss
-
-
-def test_loop(dataloader, model, loss_fn, device):
-
-    def test(X, y):
-        model.eval()
-        with torch.no_grad():
-            pred = model(X.to(device))
-            loss = loss_fn(pred, y.to(device).unsqueeze(1))
-            return loss.item()
-    
-    num_batches = len(dataloader)
-    losses = [test(X, y) for X, y in dataloader]
-    avg_test_loss = sum(losses) / num_batches
-    
-    return avg_test_loss

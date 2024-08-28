@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 
 from analysis.afb import calc_afb_of_q_squared
 from analysis.s5 import calc_s5_of_q_squared
-from analysis.plot import setup_mpl_params
+from analysis.plot.plot import setup_mpl_params
 
 from helpers import load_df_all_trials, list_dc9
 
