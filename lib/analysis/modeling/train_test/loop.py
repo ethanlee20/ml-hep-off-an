@@ -45,8 +45,8 @@ def train_loop(dataloader, model, loss_fn, optimizer, device):
 
     def train(X, y):
         model.train()
-        pred = model(X.to(device))
-        loss = loss_fn(pred, y.to(device))
+        pred = model(X)
+        loss = loss_fn(pred, y)
         loss.backward()
         optimizer.step()
         optimizer.zero_grad()
@@ -82,8 +82,8 @@ def test_loop(dataloader, model, loss_fn, device):
     def test(X, y):
         model.eval()
         with torch.no_grad():
-            pred = model(X.to(device))
-            loss = loss_fn(pred, y.to(device))
+            pred = model(X)
+            loss = loss_fn(pred, y)
             return loss.item()
     
     num_batches = len(dataloader)

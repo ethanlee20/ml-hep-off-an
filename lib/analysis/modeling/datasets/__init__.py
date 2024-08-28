@@ -1,2 +1,3 @@
 
+from .generate.generate_stacked_hist2d import generate_stacked_hist2d_data
 from .stacked_hist2d import Stacked_Hist2d_Dataset

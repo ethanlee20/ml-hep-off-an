@@ -12,14 +12,16 @@ from analysis.modeling.models import Stacked_Hist2d_Model
 
 
 level = "gen"
-num_events_per_dist = 40_000
-num_dists_per_dc9 = 200
+
 learning_rate = 1e-4
 epochs = 100
 train_batch_size = 20
 test_batch_size = 15
 
+in_dir_path = "../datafiles/stacked_hist2d"
+
 run_name = "test_test"
+
 output_dirpath = "../models"
 
 device = select_device()
@@ -31,17 +33,17 @@ loss_fn = MSELoss()
 optimizer = Adam(model.parameters(), lr=learning_rate)
 
 dataset_train = Stacked_Hist2d_Dataset(
+    in_dir_path, 
+    "train", 
     level, 
-    train=True, 
-    num_events_per_dist=num_events_per_dist, 
-    num_dists_per_dc9=num_dists_per_dc9
+    device
 )
 
 dataset_test = Stacked_Hist2d_Dataset(
+    in_dir_path, 
+    "test", 
     level, 
-    train=False, 
-    num_events_per_dist=num_events_per_dist, 
-    num_dists_per_dc9=num_dists_per_dc9
+    device
 )
 
 train_test(
