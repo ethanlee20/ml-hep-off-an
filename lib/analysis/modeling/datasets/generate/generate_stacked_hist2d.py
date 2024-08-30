@@ -56,9 +56,9 @@ def make_hist_stack(df, normalize=True):
     numpy.ndarray
     """
 
-    n_bins = 5
+    n_bins = 20
     bins = {
-        "q_squared": np.array([0, 1, 6, 12, 16, 20]),
+        "q_squared": np.linspace(start=0, stop=20, num=n_bins+1),
         "chi": np.linspace(start=0, stop=2*np.pi, num=n_bins+1),
         "costheta_mu": np.linspace(start=-1, stop=1, num=n_bins+1),
         "costheta_K": np.linspace(start=-1, stop=1, num=n_bins+1),

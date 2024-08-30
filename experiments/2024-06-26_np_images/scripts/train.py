@@ -14,7 +14,7 @@ from analysis.modeling.models import Stacked_Hist2d_Model
 level = "gen"
 
 learning_rate = 1e-4
-epochs = 100
+epochs = 80
 train_batch_size = 20
 test_batch_size = 15
 

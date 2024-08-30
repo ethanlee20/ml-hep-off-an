@@ -3,7 +3,7 @@ from pathlib import Path
 
 import numpy as np
 
-from torch import from_numpy
+from torch import from_numpy, unsqueeze
 from torch.utils.data import Dataset
 
 
@@ -46,6 +46,6 @@ class Stacked_Hist2d_Dataset(Dataset):
 
     def __getitem__(self, idx):
         x = self.x[idx]
-        y = self.y[idx]
+        y = unsqueeze(self.y[idx], 0) 
         return x, y
     

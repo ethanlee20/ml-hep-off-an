@@ -9,22 +9,33 @@ import pandas as pd
 from helpers import file_info, load_trial_range
 
 
+features = [
+    "q_squared", 
+    "costheta_mu", 
+    "costheta_K", 
+    "chi",
+]
+
+labels = ["dc9"]
+
 for train in (True, False):
         
     trial_range = (
-        range(1, 27) if train
-        else range(27, 36)
+        range(1, 31) if train
+        else range(31, 41)
     )
 
     filepaths = load_trial_range(trial_range)
 
-    df_all = pd.DataFrame(columns=["q_squared", "costheta_mu", "costheta_K", "chi", "dc9"])
+    df_all = pd.DataFrame(
+        columns=(features + labels)
+    )
 
     for fp in filepaths:
         
         df_to_add = pd.read_pickle(fp)
         
-        df_to_add = df_to_add[["q_squared", "costheta_mu", "costheta_K", "chi"]]
+        df_to_add = df_to_add[features]
         df_to_add.dropna(inplace=True)
         
         dc9 = file_info(fp)["dc9"]
