@@ -1,7 +1,8 @@
 
 """
-Generate two dataframe files, one containing all training examples 
-and the other containing all testing examples.
+A function for generating aggregated datafiles.
+
+Files are aggregated over simulation trials.
 """
 
 import pandas as pd
@@ -24,6 +25,7 @@ def generate_agg_data(split, features:list):
         (one for the generator level data and
         one for the detector level data).
     """
+    
     trial_range = (
         range(1, 31) if split=="train"
         else range(31, 41)
@@ -32,7 +34,7 @@ def generate_agg_data(split, features:list):
     filepaths = find_raw_data_paths(trial_range)
 
     df_agg = pd.DataFrame(
-        columns=(features + labels)
+        columns=(features + ["dc9"])
     )
 
     for fp in filepaths:
@@ -52,11 +54,10 @@ def generate_agg_data(split, features:list):
             ]
         )
 
-    output_filename = (
-        "df_train.pkl" if train
-        else "df_test.pkl"
-    )
-
-    df_agg.to_pickle(f"../datafiles/agg/{output_filename}")
+    for level in {"gen", "det"}:
+        df_agg_level = df_agg.loc[level]
+        out_filepath = make_agg_data_filepath(level, split)
+        df_agg_level.to_pickle(out_filepath)
+    
 
 
