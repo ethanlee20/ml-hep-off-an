@@ -145,29 +145,6 @@ simplefilter(action="ignore", category=pd.errors.PerformanceWarning)
 # # Array handling
 
 
-# def min_max(a):
-#     """
-#     Find the min, max (tuple) of an array or list of arrays.
-    
-#     Parameters
-#     ----------
-#     a : array or list of arrays
-
-#     Returns
-#     -------
-#     min : float
-#         The minimum
-#     max : float
-#         The maximum
-#     """
-
-#     if type(a) == list:
-#         a = np.concatenate(a, axis=None)
-#     min = np.nanmin(a)
-#     max = np.nanmax(a)
-#     return min, max   
-
-
 
 # # Ntuple dataframe filtering
 
@@ -378,61 +355,7 @@ def count_events(df):
 #     return round(np.sqrt(len(trim_series(data, xlim)))*scale)   
 
 
-def find_bin_middles(bins):
-    """
-    Find the position of the middle of each bin.
 
-    Assume uniform bin widths.
-    
-    Parameters
-    ----------
-    bins : array 
-        A list of bin edges
-
-    Returns
-    -------
-    array
-        Bin middles
-    """
-    num_bins = len(bins) - 1
-    bin_width = (
-        np.max(bins) - np.min(bins)
-    ) / num_bins
-    shifted_edges = bins + 0.5 * bin_width
-    return shifted_edges[:-1]
-
-    
-def make_bin_edges(start, stop, num_bins, ret_middles=False):
-    """
-    Make histogram bin edges.
-
-    Include the stop edge.
-    Bins are uniform size.
-
-    Parameters
-    ----------
-    start : float
-        The position of the first bin edge.
-    stop : float
-        The position of the last bin edge.
-    num_bins : int
-        The number of bins.
-    ret_middles : bool, optional
-        Whether or not to return the bin middles.
-
-    Returns
-    -------
-    edges : array
-        Bin edge positions.
-    middles : array, optional
-        Bins middles
-    """
-    bin_size = (stop - start) / num_bins
-    edges = np.arange(start, stop + bin_size, bin_size) 
-    if ret_middles:
-        middles = find_bin_middles(edges)
-        return edges, middles
-    return edges
 
 
 # def approx_bins(data, scale=0.2, xlim=(None,None)):
@@ -457,40 +380,7 @@ def make_bin_edges(start, stop, num_bins, ret_middles=False):
 
 
 
-def bin_data(df, var, num_bins, ret_edges=False):
-    """
-    Bin a dataframe in a particular variable.
 
-    Parameters
-    ----------
-    df : pd.DataFrame
-        Dataframe to be binned.
-    var : str
-        Name of the variable (column) to bin the dataframe in.
-    num_bins : int
-        Number of bins.
-    ret_edges : bool, optional
-        Whether or not to also return the bin edges.
-
-    Returns
-    -------
-    binned : pd.api.typing.DataFrameGroupBy
-        The binned dataframe.
-    bin_edges : array
-        Bin edge positions.
-    """
-
-    bin_edges = make_bin_edges(
-        start=df[var].min(), 
-        stop=df[var].max(), 
-        num_bins=num_bins
-    )
-    bins = pd.cut(df[var], bin_edges, include_lowest=True) # the interval each event falls into
-    binned = df.groupby(bins)
-
-    if ret_edges == False:
-        return binned
-    return binned, bin_edges
 
 
 # def find_bin_counts(binned):

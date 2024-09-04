@@ -88,7 +88,7 @@ def make_hist_stack(df, normalize=True):
     return hist_stack
 
 
-def generate_stacked_hist2d_data(split, level, num_events_per_dist, num_dists_per_dc9, out_dir_path, normalize=True):
+def generate_stacked_hist2d_data(level, split, num_events_per_dist, num_dists_per_dc9, out_dir_path, normalize=True):
     """
     Generate stacked 2d histograms from data bootstrapped
     from original aggregated ntuple data.
@@ -105,7 +105,7 @@ def generate_stacked_hist2d_data(split, level, num_events_per_dist, num_dists_pe
     - Saves to disk a file containing the stacked histogram array 
         and a file containing the corresponding labels.
     """
-    agg_data = load_agg_data(split, level)
+    agg_data = load_agg_data(level, split)
 
     bootstrapped_data = bootstrap(agg_data, num_events_per_dist, num_dists_per_dc9)
 

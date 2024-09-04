@@ -9,7 +9,7 @@ Includes calculations for A_FB and S_5.
 from math import sqrt, pi
 import numpy as np
 
-from .util import count_events, bin_data, find_bin_middles
+from ..util import count_events, bin_dataframe, find_bin_middles
 
 
 
@@ -112,7 +112,7 @@ def calc_afb_of_q_squared(df, ell, num_points):
     """
 
     df = df[(df['q_squared']>0) & (df['q_squared']<20)]
-    binned, edges = bin_data(df, 'q_squared', num_points, ret_edges=True)
+    binned, edges = bin_dataframe(df, 'q_squared', num_points, ret_edges=True)
     
     afbs = binned.apply(afb_fn(ell))
     errs = binned.apply(afb_err_fn(ell))
@@ -231,7 +231,7 @@ def calc_s5_of_q_squared(df, num_points):
     """
 
     df = df[(df['q_squared']>0) & (df['q_squared']<20)]
-    binned, edges = bin_data(df, 'q_squared', num_points, ret_edges=True)
+    binned, edges = bin_dataframe(df, 'q_squared', num_points, ret_edges=True)
     
     s5s = binned.apply(calc_s5)
     errs = binned.apply(calc_s5_err)
