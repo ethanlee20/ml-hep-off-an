@@ -1,6 +1,8 @@
 
+from math import pi
 from pathlib import Path
 
+import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.colors import CenteredNorm
 from matplotlib.cm import ScalarMappable
@@ -8,14 +10,16 @@ from matplotlib.cm import ScalarMappable
 from analysis.calc import calculate_efficiency
 
 
-def plot_efficiency_curve(df_data, variable, dc9, ax, cmap, norm, n=10, alpha=0.8):
+def plot_efficiency_curve(d_gen, d_det, color, ax, interval, n=10):
     """
     Plot the efficiency of a particular data.
 
     Parameters
     ----------
-    df_data : pd.DataFrame
-        The aggregated dataframe.
+    df_gen : pd.DataFrame
+        The aggregated generator level dataframe.
+    df_det : pd.DataFrame
+        The aggregated detector level dataframe.
     variable : str
         The name of the variable of which to plot the efficiency.
     dc9 : float
@@ -36,22 +40,20 @@ def plot_efficiency_curve(df_data, variable, dc9, ax, cmap, norm, n=10, alpha=0.
     - Plots the efficiency on the specified axes.
     """
 
-    d_generator = df_data[variable+"_mc"]
-    d_detector = df_data[variable]
-    x, y, err = calculate_efficiency(d_generator, d_detector, n)
-    color = cmap(norm(dc9), alpha=alpha)
+    x, y, err = calculate_efficiency(d_gen, d_det, interval, n)
     ax.errorbar(x, y, yerr=err, fmt='none', ecolor=color, elinewidth=0.5, capsize=0)
     ax.scatter(x, y, s=4, color=color)
-    return
 
 
-def plot_efficiency_all(df_data, out_dir_path, n=10, alpha=0.8):
+def plot_efficiency_all(df_gen, df_det, out_dir_path, n=10, alpha=0.8):
     """
     Plot the efficiency for variables of interest and for all delta C9 values.
 
     Parameters
     ----------
-    df_data : pd.DataFrame
+    df_gen : pd.DataFrame
+        The aggregated dataframe.
+    df_det : pd.DataFrame
         The aggregated dataframe.
     n : int, optional
         The number of datapoints to plot per curve.
@@ -65,18 +67,43 @@ def plot_efficiency_all(df_data, out_dir_path, n=10, alpha=0.8):
     
     variables = ["q_squared", "costheta_mu", "costheta_K", "chi"]
 
-    fig, axs = plt.subplots(2,2, sharex=True)
+    x_intervals = [(0, 20), (-1, 1), (-1, 1), (0, 2*pi)]
+
+    x_labels = [r"$q^2$ [GeV$^2$]", r"$\cos\theta_\mu$", r"$\cos\theta_K$", r"$\chi$"]
+    
+    dc9_values = df_gen["dc9"].unique()
+
+    fig, axs = plt.subplots(2,2, sharey=True, layout="compressed")
 
     cmap = plt.cm.coolwarm
-    norm = CenteredNorm(vcenter=0, halfrange=abs(df_data["dc9"].min()))
+    norm = CenteredNorm(vcenter=0, halfrange=abs(np.min(dc9_values)))
 
-    df_by_dc9 = df_data.groupby("dc9")
+    for var, inter, x_lab, ax in zip(variables, x_intervals, x_labels, axs.flat): 
+        
+        ax.set_xlabel(x_lab)
+        ax.set_ylim(bottom=0, top=0.64)
 
-    for var, ax in zip(variables, axs):
-        for dc9, df_group in df_by_dc9:
-            plot_efficiency_curve(df_group, var, dc9, ax, cmap, norm, n, alpha)
+        if var == "chi":
+            ax.set_xticks([0, pi, 2*pi])
+            ax.set_xticklabels([r"$0$",  r"$\pi$", r"$2\pi$"])
+        
+        for dc9 in dc9_values:
+            color = cmap(norm(dc9), alpha=alpha)
+            d_gen = df_gen[df_gen["dc9"]==dc9][var]    
+            d_det = df_det[df_det["dc9"]==dc9][var]    
+            plot_efficiency_curve(d_gen, d_det, color, ax, inter, n)
 
-    fig.colorbar(ScalarMappable(norm=norm, cmap=cmap), ax=ax, orientation='vertical', label=r'$\delta C_9$')
+
+    fig.colorbar(ScalarMappable(norm=norm, cmap=cmap), ax=axs, orientation='vertical', label=r'$\delta C_9$')
+    fig.supylabel(r"$\varepsilon$")
+
+    fig.text(
+        0.83, 0.97, 
+        r"\textbf{Generator Events / $\delta C_9$} : $\sim$" + f"{len(df_gen)/len(dc9_values):.0}\n" +
+        r"\textbf{Reconstructed Events / $\delta C_9$} : $\sim$" + f"{len(df_det)/len(dc9_values):.0}\n",
+        verticalalignment='bottom', 
+        horizontalalignment='right',
+    )
 
     out_dir_path = Path(out_dir_path)
     out_file_path = out_dir_path.joinpath("efficiency.png")

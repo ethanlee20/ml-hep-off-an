@@ -56,8 +56,8 @@ def make_bin_edges(start, stop, num_bins, ret_middles=False):
     middles : array, optional
         Bins middles
     """
-    bin_size = (stop - start) / num_bins
-    edges = np.arange(start, stop + bin_size, bin_size) 
+
+    edges = np.linspace(start, stop, num_bins+1) 
     if ret_middles:
         middles = find_bin_middles(edges)
         return edges, middles

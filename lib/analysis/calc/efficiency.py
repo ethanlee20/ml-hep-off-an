@@ -11,7 +11,7 @@ from analysis.util import make_bin_edges
 
 
 
-def calculate_efficiency(d_gen, d_det, n):
+def calculate_efficiency(d_gen, d_det, interval, n):
     """
     Calculate the efficiency.
 
@@ -29,6 +29,8 @@ def calculate_efficiency(d_gen, d_det, n):
         Pandas series of generator level values
     d_det : pd.Series
         Pandas series of detector level values.
+    interval : tuple of float 
+        The (min, max) interval over which to compute.
     n : int
         The number of bins.
 
@@ -42,8 +44,7 @@ def calculate_efficiency(d_gen, d_det, n):
         The uncertainty of the efficiency per bin.
     """
     
-    min, max = min_max([d_gen, d_det])
-    bin_edges, bin_mids = make_bin_edges(min, max, n, ret_middles=True)
+    bin_edges, bin_mids = make_bin_edges(*interval, n, ret_middles=True)
 
     hist_gen, _ = np.histogram(d_gen, bins=bin_edges)
     hist_det, _ = np.histogram(d_det, bins=bin_edges)

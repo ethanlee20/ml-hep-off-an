@@ -1,22 +1,37 @@
 
-def calculate_resolution(data, variable, q_squared_split):
+
+import numpy as np
+
+
+def calculate_resolution(d_recon, d_truth, periodic=False):
     """
     Calculate the resolution.
 
-    The resolution of a variable is defined as the
-    reconstructed value minus the MC truth value.
+    The resolution of a variable is defined as its
+    reconstructed value minus its MC truth value.
 
-    If the variable is chi, periodicity is accounted for.
+    If specified, periodicity is accounted for.
+
+    Parameters
+    ----------
+    d_truth : pd.Series
+        The pandas series containing the truth data.
+    d_recon : pd.Series
+        The pandas series containing the reconstructed data.
+    periodic : bool, optional
+        Whether or not to account for periodicity.
+
+    Returns
+    -------
+    pd.Series
+        The resolution per event.
     """
 
-    data_calc = section(data, sig_noise='sig', var=variable, q_squared_split=q_squared_split).loc["det"]
-    data_mc = section(data, sig_noise='sig', var=variable+'_mc', q_squared_split=q_squared_split).loc["det"]
+    resolution = d_recon - d_truth
 
-    resolution = data_calc - data_mc
-
-    if variable != "chi":
+    if not periodic:
         return resolution
-
+    
     def apply_periodicity(resolution):
         resolution = resolution.where(
                 resolution < np.pi, resolution - 2 * np.pi
