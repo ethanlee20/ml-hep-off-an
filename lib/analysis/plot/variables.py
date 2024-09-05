@@ -33,16 +33,18 @@ def plot_variables_all(df_gen, df_det, n_bins_gen, n_bins_det, out_dir_path, alp
     list_of_dfs = (df_gen, df_det)
     list_of_n_bins = (n_bins_gen, n_bins_det)
     list_of_out_file_names = ("variables_gen.png", "variables_det.png")
+    list_of_level_labels = ("Generator", "Detector")
     
     cmap = plt.cm.coolwarm
     norm = CenteredNorm(vcenter=0, halfrange=abs(np.min(dc9_values)))
 
-    for fig, axs, df, n_bins, file_name in zip(
+    for fig, axs, df, n_bins, file_name, label in zip(
         list_of_figures, 
         list_of_axs, 
         list_of_dfs, 
         list_of_n_bins, 
-        list_of_out_file_names
+        list_of_out_file_names,
+        list_of_level_labels
     ):
         # breakpoint()
         bins_per_var = [make_bin_edges(*inter, n_bins) for inter in x_intervals]
@@ -54,30 +56,27 @@ def plot_variables_all(df_gen, df_det, n_bins_gen, n_bins_det, out_dir_path, alp
             df_sm = df[df["dc9"]==0]
             d_var_sm = df_sm[var]
             
-            # ax.text(
-            #     0, 1, 
-            #     r"Stdev. ($\delta C_9 = 0$) : " + f"{sm_resolution.std():.0}", 
-            #     verticalalignment='bottom', 
-            #     horizontalalignment='left',
-            #     transform=ax.transAxes,
-            # )
-            
             for dc9 in dc9_values:
                 color = cmap(norm(dc9), alpha=alpha)
                 df_dc9 = df[df["dc9"]==dc9]
                 d_var = df_dc9[var]    
                 plot_hist(d_var, bins, color, ax)
 
-            plot_hist(d_var_sm, bins, "black", ax, linestyle=(0, (1, 1)))
+            plot_hist(d_var_sm, bins, "dimgrey", ax, linestyle=(0, (1, 1)), label=r"SM ($\delta C_9 = 0$)")
 
+        axs.flat[0].legend()
         fig.colorbar(ScalarMappable(norm=norm, cmap=cmap), ax=axs, orientation='vertical', label=r'$\delta C_9$')
-        # breakpoint()
+
         fig.text(
             0, 1.02, 
+            r"\textbf{" + f"{label}" + "}\n" +
             r"\textbf{Events / $\delta C_9$} : $\sim$" + f"{len(df)/len(dc9_values):.0}",
             verticalalignment='bottom', 
             horizontalalignment='left',
         )
+
+
+
 
         out_dir_path = Path(out_dir_path)
         out_file_path = out_dir_path.joinpath(file_name)

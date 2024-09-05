@@ -12,7 +12,7 @@ from ..calc import calculate_resolution
 from ..util import make_bin_edges
 
 
-def plot_resolution_curve(d_recon, d_truth, bins, color, ax, periodic=False):
+def plot_resolution_curve(d_recon, d_truth, bins, color, ax, periodic=False, label=None):
 
     """
     Plot the resolution of a particular data.
@@ -39,7 +39,7 @@ def plot_resolution_curve(d_recon, d_truth, bins, color, ax, periodic=False):
 
     resolution = calculate_resolution(d_recon, d_truth, periodic)
 
-    ax.hist(resolution, bins=bins, density=True, histtype="step", color=color)
+    ax.hist(resolution, bins=bins, density=True, histtype="step", color=color, label=label)
 
 
 def plot_resolution_all(df_det, out_dir_path, n_bins=10, alpha=0.8):
@@ -87,7 +87,10 @@ def plot_resolution_all(df_det, out_dir_path, n_bins=10, alpha=0.8):
         ax.set_xlabel(x_lab)
 
         df_sm = df_det[df_det["dc9"]==0]
-        sm_resolution = calculate_resolution(df_sm[var], df_sm[var+"_mc"])
+        d_sm_recon = df_sm[var]
+        d_sm_truth = df_sm[var+"_mc"]
+        
+        sm_resolution = calculate_resolution(d_sm_recon, d_sm_truth)
         ax.text(
             0, 1, 
             r"Stdev. ($\delta C_9 = 0$) : " + f"{sm_resolution.std():.0}", 
@@ -103,7 +106,11 @@ def plot_resolution_all(df_det, out_dir_path, n_bins=10, alpha=0.8):
             d_truth = df_dc9[var+"_mc"]    
             plot_resolution_curve(d_recon, d_truth, bins, color, ax, periodic)
 
+        plot_resolution_curve(d_sm_recon, d_sm_truth, bins, "dimgrey", ax, periodic, label=r"SM ($\delta C_9 = 0$)")
+
+    axs.flat[0].legend()
     fig.colorbar(ScalarMappable(norm=norm, cmap=cmap), ax=axs, orientation='vertical', label=r'$\delta C_9$')
+
 
     fig.text(
         0, 1.02, 
