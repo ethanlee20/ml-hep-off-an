@@ -11,7 +11,20 @@ import torch
 from torch.utils.data import Dataset
 
 
+def file_info(filepath):
+    """Accecpts name or path."""
+    filepath = Path(filepath)
+    split_name = filepath.name.split('_')
+    dc9, trial = float(split_name[1]), int(split_name[2])
+    result = {'dc9': dc9, 'trial': trial}
+    return result
 
+
+def list_dc9():
+    filenames = list(Path("../datafiles/raw").glob("*.pkl"))
+    dc9s = [file_info(name)["dc9"] for name in filenames]
+    result = sorted(set(dc9s))
+    return result 
 
 
 def make_image_filename(dc9, trial, level, ext=".npy"):
@@ -56,7 +69,7 @@ def load_trial_range(trial_range:range, data_dirpath="../datafiles/raw"):
 
 
 def load_df_all_trials(dc9):
-    filepaths=list(Path("../datafiles").glob(f"dc9_{dc9}_*_re.pkl"))
+    filepaths=list(Path("../datafiles/raw").glob(f"dc9_{dc9}_*_re.pkl"))
     dfs = [pd.read_pickle(path) for path in filepaths]
     result = pd.concat(dfs)
     return result

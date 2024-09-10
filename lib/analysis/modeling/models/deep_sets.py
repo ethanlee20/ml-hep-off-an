@@ -1,5 +1,6 @@
 
 from torch import nn
+import torch
 
 
 class Phi(nn.Module):
@@ -9,19 +10,17 @@ class Phi(nn.Module):
         super().__init__()
         
         self.dense = nn.Sequential(
-            nn.Linear(4, 256),
+            nn.Linear(8, 16),
             nn.ReLU(),
-            nn.Linear(256, 256),
+            nn.Linear(16, 32),
             nn.ReLU(),
-            nn.Linear(256, 256),
+            nn.Linear(32, 64),
             nn.ReLU(),
-            nn.Linear(256, 256),
+            nn.Linear(64, 128),
         )
 
     def forward(self, x):
-        
         result = self.dense(x)
-        
         return result
     
 
@@ -32,18 +31,23 @@ class Rho(nn.Module):
         super().__init__()
 
         self.dense = nn.Sequential(
-            nn.Linear(256, 256),
+            nn.Linear(128, 64),
             nn.ReLU(),
-            nn.Linear(256, 256),
+            nn.Linear(64, 32),
             nn.ReLU(),
-            nn.Linear(256, 1)
+            nn.Linear(32, 16),
+            nn.ReLU(),
+            nn.Linear(16, 8),
+            nn.ReLU(),
+            nn.Linear(8, 4),
+            nn.ReLU(),
+            nn.Linear(4, 1),
         )
     
     def forward(self, x):
-
         result = self.dense(x)
-
         return result
+
     
 
 class Deep_Sets(nn.Module):
@@ -53,7 +57,6 @@ class Deep_Sets(nn.Module):
         super().__init__()
 
         self.phi = Phi()
-        
         self.rho = Rho()
 
         self.double()
@@ -62,13 +65,13 @@ class Deep_Sets(nn.Module):
         
         phi_of_x = self.phi(x)
         
-        sum_phi = phi_of_x.sum(axis=1)
+        mean_phi = torch.mean(phi_of_x, 1)
         
-        rho_of_sum = self.rho(sum_phi)
-        
-        # breakpoint()
+        rho_of_mean_phi = self.rho(mean_phi)
 
-        return rho_of_sum
+        rho_of_mean_phi_squeezed = rho_of_mean_phi.squeeze()
+        
+        return rho_of_mean_phi_squeezed
 
 
 

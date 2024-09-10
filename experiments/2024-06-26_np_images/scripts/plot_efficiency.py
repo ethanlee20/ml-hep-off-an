@@ -20,4 +20,4 @@ df_det = pd.read_pickle(data_det_filepath)
 
 
 
-plot_efficiency_all(df_gen, df_det, "../plots", n=25)
+plot_efficiency_all(df_gen, df_det, "../plots", n=30)

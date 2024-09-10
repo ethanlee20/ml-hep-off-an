@@ -12,7 +12,7 @@ from ..calc import calculate_resolution
 from ..util import make_bin_edges
 
 
-def plot_resolution_curve(d_recon, d_truth, bins, color, ax, periodic=False, label=None):
+def plot_resolution_curve(d_recon, d_truth, bins, color, ax, periodic=False, label=None, linestyle="-"):
 
     """
     Plot the resolution of a particular data.
@@ -39,7 +39,7 @@ def plot_resolution_curve(d_recon, d_truth, bins, color, ax, periodic=False, lab
 
     resolution = calculate_resolution(d_recon, d_truth, periodic)
 
-    ax.hist(resolution, bins=bins, density=True, histtype="step", color=color, label=label)
+    ax.hist(resolution, bins=bins, density=True, histtype="step", color=color, label=label, linestyle=linestyle)
 
 
 def plot_resolution_all(df_det, out_dir_path, n_bins=10, alpha=0.8):
@@ -73,7 +73,7 @@ def plot_resolution_all(df_det, out_dir_path, n_bins=10, alpha=0.8):
 
     dc9_values = df_det["dc9"].unique()
 
-    fig, axs = plt.subplots(2,2, sharey=False, layout="compressed")
+    fig, axs = plt.subplots(2, 2, sharey=False, layout="compressed")
 
     cmap = plt.cm.coolwarm
     norm = CenteredNorm(vcenter=0, halfrange=abs(np.min(dc9_values)))
@@ -106,17 +106,23 @@ def plot_resolution_all(df_det, out_dir_path, n_bins=10, alpha=0.8):
             d_truth = df_dc9[var+"_mc"]    
             plot_resolution_curve(d_recon, d_truth, bins, color, ax, periodic)
 
-        plot_resolution_curve(d_sm_recon, d_sm_truth, bins, "dimgrey", ax, periodic, label=r"SM ($\delta C_9 = 0$)")
+        plot_resolution_curve(d_sm_recon, d_sm_truth, bins, "dimgrey", ax, periodic, label=r"SM" + "\n" + r"($\delta C_9 = 0$)", linestyle=(0, (1, 1)))
 
     axs.flat[0].legend()
     fig.colorbar(ScalarMappable(norm=norm, cmap=cmap), ax=axs, orientation='vertical', label=r'$\delta C_9$')
-
 
     fig.text(
         0, 1.02, 
         r"\textbf{Reconstructed Events / $\delta C_9$} : $\sim$" + f"{len(df_det)/len(dc9_values):.0}",
         verticalalignment='bottom', 
         horizontalalignment='left',
+    )
+
+    fig.text(
+        0.82, 1.02,  
+        r"\textbf{Normalized}",
+        verticalalignment='bottom', 
+        horizontalalignment='right',
     )
 
     out_dir_path = Path(out_dir_path)

@@ -7,20 +7,22 @@ from torch.optim import Adam
 from torch.nn import MSELoss
 
 from analysis.modeling import train_test, lin_test, select_device
-from analysis.modeling.datasets import Stacked_Hist2d_Dataset
+from analysis.datasets import Stacked_Hist2d_Dataset
 from analysis.modeling.models import Stacked_Hist2d_Model
+from analysis.plot import setup_mpl_params
+setup_mpl_params()
 
 
-level = "gen"
+level = "det"
 
 learning_rate = 1e-4
-epochs = 80
-train_batch_size = 20
-test_batch_size = 15
+epochs = 50
+train_batch_size = 32
+test_batch_size = 16
 
 in_dir_path = "../datafiles/stacked_hist2d"
 
-run_name = "test_test"
+run_name = "stacked_hist_cnn_det"
 
 output_dirpath = "../models"
 

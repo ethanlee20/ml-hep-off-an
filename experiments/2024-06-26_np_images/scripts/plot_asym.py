@@ -4,14 +4,14 @@ from matplotlib.cm import ScalarMappable
 
 import matplotlib.pyplot as plt
 
-from analysis.afb import calc_afb_of_q_squared
-from analysis.s5 import calc_s5_of_q_squared
-from analysis.plot.plot import setup_mpl_params
+from analysis.calc import calc_afb_of_q_squared
+from analysis.calc import calc_s5_of_q_squared
+from analysis.plot import setup_mpl_params
 
 from helpers import load_df_all_trials, list_dc9
 
 
-def plot_afb(data, dc9, ax, cmap, norm, ell='mu', num_points=3, alpha=0.8):
+def plot_afb(data, dc9, ax, cmap, norm, ell='mu', num_points=25, alpha=0.8):
     x, y, err = calc_afb_of_q_squared(data, ell, num_points)
     label = r"$\delta C_9 = " + f"{dc9}$"
     color = cmap(norm(dc9), alpha=alpha)
@@ -20,7 +20,7 @@ def plot_afb(data, dc9, ax, cmap, norm, ell='mu', num_points=3, alpha=0.8):
     return
 
 
-def plot_s5(data, dc9, ax, cmap, norm, ell='mu', num_points=3, alpha=0.8):
+def plot_s5(data, dc9, ax, cmap, norm, ell='mu', num_points=25, alpha=0.8):
     x, y, err = calc_s5_of_q_squared(data, num_points)
     label = r"$\delta C_9 = " + f"{dc9}$"
     color = cmap(norm(dc9), alpha=alpha)
@@ -44,24 +44,23 @@ def main():
     for level, title in zip(levels, titles):
         
         # AFB
-        fig, ax = plt.subplots()
+        fig, axs = plt.subplots([2,1])
         
         for dc9 in dc9_values:
             data = load_df_all_trials(dc9).loc[level]
             plot_afb(data, dc9, ax, cmap, norm)
 
-        ax.set_title(title, loc='right')
-        ax.set_ylabel(r'$A_{FB}$')
-        ax.set_xlabel(r'$q^2$ [GeV$^2$]')
-        ax.set_xbound(0, 19)
-        ax.set_ybound(-0.3, 0.5)
+        axs[0].set_title(title, loc='right')
+        axs[0].set_ylabel(r'$A_{FB}$')
+        axs[0].set_xlabel(r'$q^2$ [GeV$^2$]')
+        axs[0].set_xbound(0, 19)
+        axs[0].set_ybound(-0.3, 0.5)
         fig.colorbar(ScalarMappable(norm=norm, cmap=cmap), ax=ax, orientation='vertical', label=r'$\delta C_9$')
         
-        plt.savefig(f"../plots/afb_{level}_lowbin.png", bbox_inches='tight')
+        plt.savefig(f"../plots/afb_{level}.png", bbox_inches='tight')
         plt.close(fig)
 
         # S5
-        fig, ax = plt.subplots()
         
         for dc9 in dc9_values:
             data = load_df_all_trials(dc9).loc[level]
@@ -74,7 +73,7 @@ def main():
         ax.set_ybound(-0.5, 0.5)
         fig.colorbar(ScalarMappable(norm=norm, cmap=cmap), ax=ax, orientation='vertical', label=r'$\delta C_9$')
         
-        plt.savefig(f"../plots/s5_{level}_lowbin.png", bbox_inches='tight')
+        plt.savefig(f"../plots/s5_{level}.png", bbox_inches='tight')
         plt.close(fig)
 
 

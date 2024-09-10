@@ -93,7 +93,7 @@ def bin_dataframe(df, var, num_bins, ret_edges=False):
         num_bins=num_bins
     )
     bins = pd.cut(df[var], bin_edges, include_lowest=True) # the interval each event falls into
-    binned = df.groupby(bins)
+    binned = df.groupby(bins, observed=False)
 
     if ret_edges == False:
         return binned

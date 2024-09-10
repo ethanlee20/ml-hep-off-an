@@ -11,6 +11,8 @@ import matplotlib.pyplot as plt
 import torch
 from torch.utils.data import DataLoader
 
+# from torch.profiler import profile, record_function, ProfilerActivity
+
 
 
 def train_loop(dataloader, model, loss_fn, optimizer, device):
@@ -50,12 +52,15 @@ def train_loop(dataloader, model, loss_fn, optimizer, device):
         loss.backward()
         optimizer.step()
         optimizer.zero_grad()
-        return loss.item()
+        return loss
     
-    num_batches = len(dataloader)
-    losses = [train(X, y) for X, y in dataloader]
-    avg_train_loss = sum(losses) / num_batches
-    return avg_train_loss
+    losses = torch.zeros(len(dataloader)).to(device)
+    for i, (X, y) in enumerate(dataloader):
+        loss = train(X, y)
+        losses[i] = loss
+
+    avg_batch_train_loss = torch.mean(losses).item()
+    return avg_batch_train_loss
 
 
 def test_loop(dataloader, model, loss_fn, device):
@@ -84,13 +89,16 @@ def test_loop(dataloader, model, loss_fn, device):
         with torch.no_grad():
             pred = model(X)
             loss = loss_fn(pred, y)
-            return loss.item()
+            return loss
     
-    num_batches = len(dataloader)
-    losses = [test(X, y) for X, y in dataloader]
-    avg_test_loss = sum(losses) / num_batches
+    losses = torch.zeros(len(dataloader)).to(device)
+    for i, (X, y) in enumerate(dataloader):
+        loss = test(X, y)
+        losses[i] = loss
+
+    avg_batch_test_loss = torch.mean(losses).item()
     
-    return avg_test_loss
+    return avg_batch_test_loss
 
 
 def train_test(model, train_data, test_data, loss_fn, optimizer, device, output_dirpath, run_name, epochs=100, train_batch_size=20, test_batch_size=5):
@@ -144,10 +152,10 @@ def train_test(model, train_data, test_data, loss_fn, optimizer, device, output_
 
     loss = []   
     for t in range(epochs):
-        train_loss = train_loop(train_dataloader, model, loss_fn, optimizer, device)
-        test_loss = test_loop(test_dataloader, model, loss_fn, device)
-        loss.append({"epoch": t, "train_loss": train_loss, "test_loss": test_loss})
-        print(f"epoch: {t}\ntrain_loss: {train_loss}\ntest_loss: {test_loss}")
+        epoch_train_loss = train_loop(train_dataloader, model, loss_fn, optimizer, device)
+        epoch_test_loss = test_loop(test_dataloader, model, loss_fn, device)
+        loss.append({"epoch": t, "train_loss": epoch_train_loss, "test_loss": epoch_test_loss})
+        print(f"epoch: {t}\ntrain_loss: {epoch_train_loss}\ntest_loss: {epoch_test_loss}")
     df_loss = pd.DataFrame.from_records(loss).iloc[2:]
 
     output_model_filepath = output_dirpath.joinpath(f"{run_name}.pt")

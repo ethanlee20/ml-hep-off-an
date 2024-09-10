@@ -52,14 +52,19 @@ def stats(x, y):
         result = sqrt(sum(squares) / (len(s)-1))
         return result
     
+    def sdm(s:list):
+        std = stdev(s)
+        result = std / sqrt(len(s))
+        return result
+    
     try:
-        y_stdev = list(map(stdev, y_by_x))
+        y_stderr = list(map(sdm, y_by_x))
     except ZeroDivisionError:
-        y_stdev = 0
+        y_stderr = 0
 
     y_mean = list(map(mean, y_by_x))
 
-    return x_unique, y_mean, y_stdev
+    return x_unique, y_mean, y_stderr
 
 
 def plot_ref_line(ax, start_x, stop_x, buffer=0.05):
@@ -90,7 +95,7 @@ def plot_ref_line(ax, start_x, stop_x, buffer=0.05):
     )   
 
 
-def plot_linearity(truth, pred_avg, pred_stdev, output_dirpath, run_name):
+def plot_linearity(truth, pred_avg, pred_stderr, output_dirpath, run_name):
     """
     Plot the linearity test results.
 
@@ -118,7 +123,7 @@ def plot_linearity(truth, pred_avg, pred_stdev, output_dirpath, run_name):
     plot_ref_line(ax, start_x=truth[0], stop_x=truth[-1])
 
     ax.scatter(truth, pred_avg, label="Results on Val. Set", color="firebrick", zorder=5, s=16)
-    ax.errorbar(truth, pred_avg, yerr=pred_stdev, fmt="none", elinewidth=0.5, capsize=0.5, color="black", label="Std. Dev.", zorder=10)
+    ax.errorbar(truth, pred_avg, yerr=pred_stderr, fmt="none", elinewidth=0.5, capsize=0.5, color="black", label="Std. Err.", zorder=10)
 
     ax.set_xlim(-2.25, 1.35)
     ax.set_ylim(-2.25, 1.35)

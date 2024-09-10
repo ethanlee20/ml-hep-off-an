@@ -10,7 +10,7 @@ from matplotlib.cm import ScalarMappable
 from analysis.calc import calculate_efficiency
 
 
-def plot_efficiency_curve(d_gen, d_det, color, ax, interval, n=10):
+def plot_efficiency_curve(d_gen, d_det, color, ax, interval, n=10, size=2, plot_error=False, label=None):
     """
     Plot the efficiency of a particular data.
 
@@ -41,8 +41,10 @@ def plot_efficiency_curve(d_gen, d_det, color, ax, interval, n=10):
     """
 
     x, y, err = calculate_efficiency(d_gen, d_det, interval, n)
-    ax.errorbar(x, y, yerr=err, fmt='none', ecolor=color, elinewidth=0.5, capsize=0)
-    ax.scatter(x, y, s=4, color=color)
+    if not plot_error:
+        elinewidth = 0
+    else: elinewidth = 0.5
+    ax.errorbar(x, y, yerr=10*err, fmt='o', color=color, ecolor=color, elinewidth=elinewidth, capsize=0, markersize=size, label=label)
 
 
 def plot_efficiency_all(df_gen, df_det, out_dir_path, n=10, alpha=0.8):
@@ -93,14 +95,25 @@ def plot_efficiency_all(df_gen, df_det, out_dir_path, n=10, alpha=0.8):
             d_det = df_det[df_det["dc9"]==dc9][var]    
             plot_efficiency_curve(d_gen, d_det, color, ax, inter, n)
 
+        d_sm_gen = df_gen[df_gen["dc9"]==0][var]
+        d_sm_det = df_det[df_det["dc9"]==0][var]
+        plot_efficiency_curve(d_sm_gen, d_sm_det, "dimgrey", ax, inter , n, size=1, plot_error=True, label=r"SM ($\delta C_9 = 0$)")
 
+    axs.flat[0].legend()
     fig.colorbar(ScalarMappable(norm=norm, cmap=cmap), ax=axs, orientation='vertical', label=r'$\delta C_9$')
     fig.supylabel(r"$\varepsilon$")
 
     fig.text(
-        0.83, 0.97, 
+        0, 1.02,  
         r"\textbf{Generator Events / $\delta C_9$} : $\sim$" + f"{len(df_gen)/len(dc9_values):.0}\n" +
-        r"\textbf{Reconstructed Events / $\delta C_9$} : $\sim$" + f"{len(df_det)/len(dc9_values):.0}\n",
+        r"\textbf{Reconstructed Events / $\delta C_9$} : $\sim$" + f"{len(df_det)/len(dc9_values):.0}",
+        verticalalignment='bottom', 
+        horizontalalignment='left',
+    )
+
+    fig.text(
+        0.82, 1.02,  
+        r"\textbf{SM Errorbars $\times 10$}",
         verticalalignment='bottom', 
         horizontalalignment='right',
     )

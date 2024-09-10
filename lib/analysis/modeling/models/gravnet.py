@@ -1,7 +1,7 @@
 
 import torch
 from torch import nn
-from torch_geometric.nn.conv import GravNetConv
+# from torch_geometric.nn.conv import GravNetConv
 
 
 class Block(nn.Module):

@@ -1,6 +1,6 @@
 
 
-def bootstrap(df, num_events_per_dist:int, num_dists_per_dc9:int):
+def sample_sets(df, num_events_per_dist:int, num_dists_per_dc9:int, replacement:bool):
     """
     Create a list of distribution dataframes.
     
@@ -29,7 +29,7 @@ def bootstrap(df, num_events_per_dist:int, num_dists_per_dc9:int):
     
     for _, df in df_by_dc9:
         for i in range(num_dists_per_dc9):
-            sample = df.sample(n=num_events_per_dist, replace=True)
+            sample = df.sample(n=num_events_per_dist, replace=replacement)
             result.append(sample)
 
     return result

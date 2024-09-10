@@ -12,7 +12,7 @@ from ..util import make_bin_edges
 
 
 def plot_hist(d_var, bins, color, ax, linestyle="-", label=None):
-    ax.hist(d_var, bins, color=color, histtype="step", linestyle=linestyle, label=label)
+    ax.hist(d_var, bins, color=color, histtype="step", linestyle=linestyle, label=label, density=True)
 
 
 def plot_variables_all(df_gen, df_det, n_bins_gen, n_bins_det, out_dir_path, alpha=0.8):
@@ -75,7 +75,12 @@ def plot_variables_all(df_gen, df_det, n_bins_gen, n_bins_det, out_dir_path, alp
             horizontalalignment='left',
         )
 
-
+        fig.text(
+            0.82, 1.02,  
+            r"\textbf{Normalized}",
+            verticalalignment='bottom', 
+            horizontalalignment='right',
+        )
 
 
         out_dir_path = Path(out_dir_path)

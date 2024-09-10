@@ -7,7 +7,7 @@ from pathlib import Path
 
 import numpy as np
 
-from ..helpers import load_agg_data, bootstrap
+from ..helpers import load_agg_data, sample_sets
 
 
 def std_scale(arr):
@@ -70,7 +70,11 @@ def make_hist_stack(df, normalize=True):
         ["q_squared", "chi"],
         ["costheta_K", "chi"],
         ["costheta_mu", "chi"],
-        ["costheta_K", "costheta_mu"]
+        ["costheta_K", "costheta_mu"],
+        ["q_squared", "q_squared"],
+        ["costheta_mu", "costheta_mu"],
+        ["costheta_K", "costheta_K"],
+        ["chi", "chi"],
     ]
 
     hists = [ 
@@ -88,7 +92,7 @@ def make_hist_stack(df, normalize=True):
     return hist_stack
 
 
-def generate_stacked_hist2d_data(level, split, num_events_per_dist, num_dists_per_dc9, out_dir_path, normalize=True):
+def generate_stacked_hist2d_data(level, split, num_events_per_dist, num_dists_per_dc9, out_dir_path, normalize=True, replacement=True):
     """
     Generate stacked 2d histograms from data bootstrapped
     from original aggregated ntuple data.
@@ -107,12 +111,12 @@ def generate_stacked_hist2d_data(level, split, num_events_per_dist, num_dists_pe
     """
     agg_data = load_agg_data(level, split)
 
-    bootstrapped_data = bootstrap(agg_data, num_events_per_dist, num_dists_per_dc9)
+    sampled_data = sample_sets(agg_data, num_events_per_dist, num_dists_per_dc9, replacement=replacement)
 
-    labels = [d.iloc[0]["dc9"] for d in bootstrapped_data]
+    labels = [d.iloc[0]["dc9"] for d in sampled_data]
     labels_np = np.array(labels)
 
-    hists_list = [make_hist_stack(d, normalize=normalize) for d in bootstrapped_data]
+    hists_list = [make_hist_stack(d, normalize=normalize) for d in sampled_data]
 
     hists_list_expanded = [np.expand_dims(h, axis=0) for h in hists_list]
 

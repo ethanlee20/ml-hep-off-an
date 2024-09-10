@@ -10,7 +10,7 @@ from warnings import simplefilter
 from matplotlib import pyplot as plt
 import matplotlib as mpl
 import numpy as np
-import uproot
+# import uproot
 import pandas as pd
 
 simplefilter(action="ignore", category=pd.errors.PerformanceWarning)
